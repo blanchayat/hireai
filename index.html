@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HireAI — CV Screening</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="logo">HireAI</div>
+  <p class="tagline">AI-powered CV screening in seconds</p>
+</header>
+<main>
+  <div class="panel">
+    <label>Job Description</label>
+    <textarea id="jobDescription" placeholder="Paste the job description here..."></textarea>
+  </div>
+  <div class="panel">
+    <label>Upload CVs (PDF or TXT)</label>
+    <input type="file" id="cvFiles" multiple accept=".pdf,.txt">
+    <span id="fileCountChip">No files selected</span>
+  </div>
+  <div class="actions">
+    <button id="analyzeBtn">Analyze with AI</button>
+    <button id="exportBtn" disabled>Export CSV</button>
+    <span id="statusChip">Ready</span>
+  </div>
+  <div id="emptyState">Upload CVs and paste a job description to get started.</div>
+  <div id="results" hidden></div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
