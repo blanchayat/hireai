@@ -1,18 +1,28 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HireAI â€” CV Screening</title>
+<title>HireAI - CV Screening</title>
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <header>
   <div class="logo">HireAI</div>
   <p class="tagline">AI-powered CV screening in seconds</p>
+  <div id="authArea">
+    <button id="loginBtn">Sign in with Google</button>
+    <span id="userInfo" hidden></span>
+    <button id="logoutBtn" hidden>Sign out</button>
+  </div>
 </header>
-<main>
+<div id="gateScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;">
+  <h2>Please sign in to use HireAI</h2>
+  <button id="loginBtn2">Sign in with Google</button>
+</div>
+<main id="appMain" hidden>
   <div class="panel">
     <label>Job Description</label>
     <textarea id="jobDescription" placeholder="Paste the job description here..."></textarea>
@@ -30,6 +40,7 @@
   <div id="emptyState">Upload CVs and paste a job description to get started.</div>
   <div id="results" hidden></div>
 </main>
-<script src="app.js"></script>`n<footer style="text-align:center;padding:24px;color:#8b95a1;font-size:0.85rem;">• Built by Nurhayat Yýlmaz · AI Automation Specialist.</footer>
+<footer style="text-align:center;padding:24px;color:#8b95a1;font-size:0.85rem;">â€¢ Built by Nurhayat Yilmaz Â· AI Automation Specialist.</footer>
+<script src="app.js"></script>
 </body>
 </html>

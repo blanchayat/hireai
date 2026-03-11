@@ -1,3 +1,46 @@
+﻿const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aW9qbmhhcWdybWZzbnlld2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2ODk5MzgsImV4cCI6MjA1NzI2NTkzOH0.yfyMFMBe3co-vXynryBVbaBY6YqEU';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function signInWithGoogle() {
+  await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+}
+
+async function signOut() {
+  await _supabase.auth.signOut();
+  location.reload();
+}
+
+_supabase.auth.onAuthStateChange((event, session) => {
+  const user = session?.user;
+  const loginBtn = document.getElementById('loginBtn');
+  const loginBtn2 = document.getElementById('loginBtn2');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const userInfo = document.getElementById('userInfo');
+  const appMain = document.getElementById('appMain');
+  const gateScreen = document.getElementById('gateScreen');
+  if (user) {
+    loginBtn.hidden = true;
+    logoutBtn.hidden = false;
+    userInfo.hidden = false;
+    userInfo.textContent = user.email;
+    appMain.hidden = false;
+    gateScreen.style.display = 'none';
+  } else {
+    loginBtn.hidden = false;
+    logoutBtn.hidden = true;
+    userInfo.hidden = true;
+    appMain.hidden = true;
+    gateScreen.style.display = 'flex';
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loginBtn').addEventListener('click', signInWithGoogle);
+  document.getElementById('loginBtn2').addEventListener('click', signInWithGoogle);
+  document.getElementById('logoutBtn').addEventListener('click', signOut);
+});
+
 const $ = (sel) => document.querySelector(sel);
 
 const els = {
