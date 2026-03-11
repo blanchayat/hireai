@@ -6,10 +6,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 async function signInWithGoogle() {
   await _supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { 
-      redirectTo: window.location.origin,
-      skipBrowserRedirect: false
-    }
+    options: { redirectTo: window.location.origin }
   });
 }
 
@@ -33,22 +30,20 @@ function updateUI(user) {
     logoutBtn.parentNode.replaceChild(newBtn, logoutBtn);
     newBtn.addEventListener('click', signOut);
   } else {
-    gateScreen.style.display = 'flex';
+    gateScreen.style.display = '';
     appWrapper.style.display = 'none';
   }
 }
 
-// Listen for auth changes (login/logout)
 _supabase.auth.onAuthStateChange((event, session) => {
+  console.log('Auth event:', event, session);
   updateUI(session?.user ?? null);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Check existing session on page load
   _supabase.auth.getSession().then(({ data: { session } }) => {
-    console.log('Session check:', session);
+    console.log('Session on load:', session);
     updateUI(session?.user ?? null);
-  });
   });
 
   document.getElementById('loginBtn2').addEventListener('click', signInWithGoogle);
