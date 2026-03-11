@@ -1,4 +1,4 @@
-/* ===== SUPABASE AUTH ===== */
+﻿/* ===== SUPABASE AUTH ===== */
 const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aW9qbmhhcWdybWZzbnlld2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2ODk5MzgsImV4cCI6MjA1NzI2NTkzOH0.yfyMFMBe3co-vXynryBVbaBY6YqEU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -17,7 +17,8 @@ async function signOut() {
   location.reload();
 }
 
-_supabase.auth.onAuthStateChange((event, session) => {
+_supabase.auth.onAuthStateChange(async (event, session) => {
+  console.log('Auth event:', event, session?.user?.email);
   const user = session?.user;
   const appWrapper = document.getElementById('appWrapper');
   const gateScreen = document.getElementById('gateScreen');
@@ -163,7 +164,7 @@ async function analyze() {
     const data = await resp.json();
     if (!resp.ok) throw new Error(data?.error || "Request failed");
     renderResults(data.results || []);
-    setStatus(`Done — ${data.results?.length || 0} candidates ranked`, "success");
+    setStatus(`Done â€” ${data.results?.length || 0} candidates ranked`, "success");
   } catch (e) {
     setStatus(e.message || "Something went wrong", "error");
   } finally {
@@ -220,3 +221,5 @@ document.addEventListener('DOMContentLoaded', () => {
   renderResults([]);
   setStatus("Ready");
 });
+
+
