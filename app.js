@@ -2,24 +2,13 @@
 const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aW9qbmhhcWdybWZzbnlld2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2ODk5MzgsImV4cCI6MjA1NzI2NTkzOH0.yfyMFMBe3co-vXynryBVbaBY6YqEU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    detectSessionInUrl: true,
-    persistSession: true,
-    autoRefreshToken: true,
-    flowType: 'implicit'
-  }
+  auth: { flowType: 'implicit' }
 });
 
 async function signInWithGoogle() {
   await _supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { 
-      redirectTo: 'https://hireai-a.vercel.app',
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      }
-    }
+    options: { redirectTo: window.location.origin }
   });
 }
 
@@ -28,29 +17,22 @@ async function signOut() {
   location.reload();
 }
 
-function updateUI(user) {
+_supabase.auth.onAuthStateChange((event, session) => {
+  const user = session?.user;
   const appWrapper = document.getElementById('appWrapper');
   const gateScreen = document.getElementById('gateScreen');
   const userInfo = document.getElementById('userInfo');
   const logoutBtn = document.getElementById('logoutBtn');
 
   if (user) {
-    gateScreen.style.display = 'none';
-    appWrapper.style.display = 'flex';
-    appWrapper.style.flexDirection = 'column';
+    gateScreen.hidden = true;
+    appWrapper.hidden = false;
     userInfo.textContent = user.email;
-    const newBtn = logoutBtn.cloneNode(true);
-    logoutBtn.parentNode.replaceChild(newBtn, logoutBtn);
-    newBtn.addEventListener('click', signOut);
+    logoutBtn.addEventListener('click', signOut);
   } else {
-    gateScreen.style.display = '';
-    appWrapper.style.display = 'none';
+    gateScreen.hidden = false;
+    appWrapper.hidden = true;
   }
-}
-
-_supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth event:', event, session?.user?.email);
-  updateUI(session?.user ?? null);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
