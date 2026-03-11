@@ -22,15 +22,16 @@ function updateUI(user) {
   const logoutBtn = document.getElementById('logoutBtn');
 
   if (user) {
-    gateScreen.hidden = true;
-    appWrapper.hidden = false;
+    gateScreen.style.display = 'none';
+    appWrapper.style.display = 'flex';
+    appWrapper.style.flexDirection = 'column';
     userInfo.textContent = user.email;
     const newBtn = logoutBtn.cloneNode(true);
     logoutBtn.parentNode.replaceChild(newBtn, logoutBtn);
     newBtn.addEventListener('click', signOut);
   } else {
-    gateScreen.hidden = false;
-    appWrapper.hidden = true;
+    gateScreen.style.display = 'flex';
+    appWrapper.style.display = 'none';
   }
 }
 
