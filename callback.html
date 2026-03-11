@@ -2,18 +2,22 @@
 <html>
 <head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 const _s = supabase.createClient(
   "https://qyiojnhaqgrmfsnyewcn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aW9qbmhhcWdybWZzbnlld2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2ODk5MzgsImV4cCI6MjA1NzI2NTkzOH0.yfyMFMBe3co-vXynryBVbaBY6YqEU"
+  "ANON_KEY"
 );
+
 _s.auth.onAuthStateChange((event, session) => {
   if (session) {
-    window.location.replace("/");
+    window.location.replace("/upload");
   }
 });
 </script>
+
 </head>
+
 <body style="background:#080b10;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
 Signing you in...
 </body>
