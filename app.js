@@ -1,20 +1,15 @@
-﻿/* ===== SUPABASE AUTH ===== */
-// Handle auth callback
-if (window.location.hash && window.location.hash.includes('access_token')) {
-  window.history.replaceState({}, document.title, window.location.pathname);
-}
-
-const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
+﻿const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aW9qbmhhcWdybWZzbnlld2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2ODk5MzgsImV4cCI6MjA1NzI2NTkzOH0.yfyMFMBe3co-vXynryBVbaBY6YqEU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { flowType: 'implicit' }
+  auth: { detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
 });
 
 async function signInWithGoogle() {
-  await _supabase.auth.signInWithOAuth({
+  const { error } = await _supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin }
+    options: { redirectTo: 'https://hireai-a.vercel.app' }
   });
+  if (error) console.error(error);
 }
 
 async function signOut() {
@@ -22,23 +17,37 @@ async function signOut() {
   location.reload();
 }
 
-_supabase.auth.onAuthStateChange(async (event, session) => {
-  console.log('Auth event:', event, session?.user?.email);
-  const user = session?.user;
+// Check session on load
+async function checkSession() {
+  const { data: { session } } = await _supabase.auth.getSession();
+  console.log('Session on load:', session?.user?.email);
+  updateUI(session?.user);
+}
+
+function updateUI(user) {
   const appWrapper = document.getElementById('appWrapper');
   const gateScreen = document.getElementById('gateScreen');
   const userInfo = document.getElementById('userInfo');
-  const logoutBtn = document.getElementById('logoutBtn');
-
   if (user) {
     gateScreen.hidden = true;
     appWrapper.hidden = false;
-    userInfo.textContent = user.email;
-    logoutBtn.addEventListener('click', signOut);
+    if (userInfo) userInfo.textContent = user.email;
   } else {
     gateScreen.hidden = false;
     appWrapper.hidden = true;
   }
+}
+
+_supabase.auth.onAuthStateChange((event, session) => {
+  console.log('Auth event:', event, session?.user?.email);
+  updateUI(session?.user);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  checkSession();
+  document.getElementById('loginBtn2')?.addEventListener('click', signInWithGoogle);
+  document.getElementById('loginBtn')?.addEventListener('click', signInWithGoogle);
+  document.getElementById('logoutBtn')?.addEventListener('click', signOut);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
