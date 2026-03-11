@@ -1,7 +1,13 @@
 /* ===== SUPABASE AUTH ===== */
 const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aW9qbmhhcWdybWZzbnlld2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2ODk5MzgsImV4cCI6MjA1NzI2NTkzOH0.yfyMFMBe3co-vXynryBVbaBY6YqEU';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    detectSessionInUrl: true,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 async function signInWithGoogle() {
   await _supabase.auth.signInWithOAuth({
@@ -36,26 +42,11 @@ function updateUI(user) {
 }
 
 _supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth event:', event, session);
+  console.log('Auth event:', event, session?.user?.email);
   updateUI(session?.user ?? null);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Handle OAuth callback from URL hash
-  if (window.location.hash.includes('access_token')) {
-    _supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        updateUI(session.user);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-    });
-  }
-
-  _supabase.auth.getSession().then(({ data: { session } }) => {
-    console.log('Session on load:', session);
-    updateUI(session?.user ?? null);
-  });
-
   document.getElementById('loginBtn2').addEventListener('click', signInWithGoogle);
   const loginBtn = document.getElementById('loginBtn');
   if (loginBtn) loginBtn.addEventListener('click', signInWithGoogle);
