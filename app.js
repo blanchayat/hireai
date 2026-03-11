@@ -46,7 +46,9 @@ _supabase.auth.onAuthStateChange((event, session) => {
 document.addEventListener('DOMContentLoaded', () => {
   // Check existing session on page load
   _supabase.auth.getSession().then(({ data: { session } }) => {
+    console.log('Session check:', session);
     updateUI(session?.user ?? null);
+  });
   });
 
   document.getElementById('loginBtn2').addEventListener('click', signInWithGoogle);
