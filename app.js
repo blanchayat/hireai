@@ -41,6 +41,16 @@ _supabase.auth.onAuthStateChange((event, session) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Handle OAuth callback from URL hash
+  if (window.location.hash.includes('access_token')) {
+    _supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        updateUI(session.user);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    });
+  }
+
   _supabase.auth.getSession().then(({ data: { session } }) => {
     console.log('Session on load:', session);
     updateUI(session?.user ?? null);
