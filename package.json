@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/blanchayat/hireai/issues"
   },
-  "homepage": "https://github.com/blanchayat/hireai#readme"
+  "homepage": "https://github.com/blanchayat/hireai#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0"
+  }
 }
