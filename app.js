@@ -12,7 +12,13 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 async function signInWithGoogle() {
   await _supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin }
+    options: { 
+      redirectTo: 'https://hireai-a.vercel.app',
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      }
+    }
   });
 }
 
