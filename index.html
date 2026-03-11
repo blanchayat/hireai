@@ -138,22 +138,6 @@
     <span class="footer-right">Powered by Claude AI</span>
   </footer>
 </div>
-  <script>
-  if (window.location.hash && window.location.hash.includes('access_token')) {
-    const params = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
-    if (accessToken) {
-      localStorage.setItem('sb-qyiojnhaqgrmfsnyewcn-auth-token', JSON.stringify({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        token_type: 'bearer'
-      }));
-      window.history.replaceState({}, document.title, window.location.pathname);
-      window.location.reload();
-    }
-  }
-</script>
 
 <script src="app.js"></script>
 </body>
