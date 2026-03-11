@@ -15,8 +15,7 @@ async function signOut() {
   location.reload();
 }
 
-_supabase.auth.onAuthStateChange((event, session) => {
-  const user = session?.user;
+function updateUI(user) {
   const appWrapper = document.getElementById('appWrapper');
   const gateScreen = document.getElementById('gateScreen');
   const userInfo = document.getElementById('userInfo');
@@ -26,11 +25,23 @@ _supabase.auth.onAuthStateChange((event, session) => {
     gateScreen.hidden = true;
     appWrapper.hidden = false;
     userInfo.textContent = user.email;
-    logoutBtn.addEventListener('click', signOut);
+    const newBtn = logoutBtn.cloneNode(true);
+    logoutBtn.parentNode.replaceChild(newBtn, logoutBtn);
+    newBtn.addEventListener('click', signOut);
   } else {
     gateScreen.hidden = false;
     appWrapper.hidden = true;
   }
+}
+
+// Check existing session on page load
+_supabase.auth.getSession().then(({ data: { session } }) => {
+  updateUI(session?.user ?? null);
+});
+
+// Listen for auth changes (login/logout)
+_supabase.auth.onAuthStateChange((event, session) => {
+  updateUI(session?.user ?? null);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -186,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Drag & drop
   if (uploadArea) {
     uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--accent)'; });
     uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
