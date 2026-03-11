@@ -34,17 +34,17 @@ function updateUI(user) {
   }
 }
 
-// Check existing session on page load
-_supabase.auth.getSession().then(({ data: { session } }) => {
-  updateUI(session?.user ?? null);
-});
-
 // Listen for auth changes (login/logout)
 _supabase.auth.onAuthStateChange((event, session) => {
   updateUI(session?.user ?? null);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Check existing session on page load
+  _supabase.auth.getSession().then(({ data: { session } }) => {
+    updateUI(session?.user ?? null);
+  });
+
   document.getElementById('loginBtn2').addEventListener('click', signInWithGoogle);
   const loginBtn = document.getElementById('loginBtn');
   if (loginBtn) loginBtn.addEventListener('click', signInWithGoogle);
