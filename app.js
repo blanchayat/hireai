@@ -1,9 +1,13 @@
-﻿const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
+/* ===== SUPABASE AUTH ===== */
+const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aW9qbmhhcWdybWZzbnlld2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2ODk5MzgsImV4cCI6MjA1NzI2NTkzOH0.yfyMFMBe3co-vXynryBVbaBY6YqEU';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function signInWithGoogle() {
-  await _supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+  await _supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin }
+  });
 }
 
 async function signOut() {
@@ -13,50 +17,39 @@ async function signOut() {
 
 _supabase.auth.onAuthStateChange((event, session) => {
   const user = session?.user;
-  const loginBtn = document.getElementById('loginBtn');
-  const loginBtn2 = document.getElementById('loginBtn2');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const userInfo = document.getElementById('userInfo');
-  const appMain = document.getElementById('appMain');
+  const appWrapper = document.getElementById('appWrapper');
   const gateScreen = document.getElementById('gateScreen');
+  const userInfo = document.getElementById('userInfo');
+  const logoutBtn = document.getElementById('logoutBtn');
+
   if (user) {
-    loginBtn.hidden = true;
-    logoutBtn.hidden = false;
-    userInfo.hidden = false;
+    gateScreen.hidden = true;
+    appWrapper.hidden = false;
     userInfo.textContent = user.email;
-    appMain.hidden = false;
-    gateScreen.style.display = 'none';
+    logoutBtn.addEventListener('click', signOut);
   } else {
-    loginBtn.hidden = false;
-    logoutBtn.hidden = true;
-    userInfo.hidden = true;
-    appMain.hidden = true;
-    gateScreen.style.display = 'flex';
+    gateScreen.hidden = false;
+    appWrapper.hidden = true;
   }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('loginBtn').addEventListener('click', signInWithGoogle);
   document.getElementById('loginBtn2').addEventListener('click', signInWithGoogle);
-  document.getElementById('logoutBtn').addEventListener('click', signOut);
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) loginBtn.addEventListener('click', signInWithGoogle);
 });
 
+/* ===== APP LOGIC ===== */
 const $ = (sel) => document.querySelector(sel);
-
-const els = {
-  jobDescription: $("#jobDescription"),
-  cvFiles: $("#cvFiles"),
-  analyzeBtn: $("#analyzeBtn"),
-  exportBtn: $("#exportBtn"),
-  results: $("#results"),
-  emptyState: $("#emptyState"),
-  fileCountChip: $("#fileCountChip"),
-  statusChip: $("#statusChip")
-};
 
 let lastResults = [];
 
-function setStatus(text) { els.statusChip.textContent = text; }
+function setStatus(text, type = '') {
+  const chip = $('#statusChip');
+  chip.textContent = text;
+  chip.style.color = type === 'error' ? '#ff4d6d' : type === 'success' ? '#00e5a0' : '';
+  chip.style.borderColor = type === 'error' ? 'rgba(255,77,109,0.3)' : type === 'success' ? 'rgba(0,229,160,0.3)' : '';
+}
 
 function scoreClass(score) {
   if (score >= 75) return "scoreGreen";
@@ -70,33 +63,53 @@ function escapeHtml(s) {
 
 function renderResults(results) {
   lastResults = results || [];
-  els.exportBtn.disabled = !lastResults.length;
-  if (!lastResults.length) { els.results.hidden = true; els.emptyState.hidden = false; return; }
-  els.emptyState.hidden = true;
-  els.results.hidden = false;
-  els.results.innerHTML = lastResults.map((r, i) => `
-    <div class="card">
-      <div class="row">
-        <div class="left">
-          <div class="filename">${escapeHtml(r.filename || "CV")}</div>
-          <div class="subline">
-            <span class="badge badgeStrong">#${i+1}</span>
-            <span class="badge">${escapeHtml(r.recommendation)}</span>
+  const exportBtn = $('#exportBtn');
+  const resultsEl = $('#results');
+  const emptyState = $('#emptyState');
+
+  if (exportBtn) exportBtn.disabled = !lastResults.length;
+
+  if (!lastResults.length) {
+    if (resultsEl) resultsEl.hidden = true;
+    if (emptyState) emptyState.style.display = 'flex';
+    return;
+  }
+
+  if (emptyState) emptyState.style.display = 'none';
+  if (resultsEl) {
+    resultsEl.hidden = false;
+    resultsEl.innerHTML = lastResults.map((r, i) => `
+      <div class="card">
+        <div class="row">
+          <div class="rank">#${i+1}</div>
+          <div class="left">
+            <div class="filename">${escapeHtml(r.filename || "CV")}</div>
+            <div class="subline">
+              <span class="badge badgeStrong">${escapeHtml(r.recommendation)}</span>
+            </div>
+          </div>
+          <div class="score ${scoreClass(r.matchScore)}">${r.matchScore}</div>
+          <svg class="chevron" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="details">
+          <div class="grid2">
+            <div class="box">
+              <div class="boxTitle">Strengths</div>
+              <ol class="list">${(r.strengths||[]).map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ol>
+            </div>
+            <div class="box">
+              <div class="boxTitle">Weaknesses</div>
+              <ol class="list">${(r.weaknesses||[]).map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ol>
+            </div>
           </div>
         </div>
-        <div class="score ${scoreClass(r.matchScore)}">${r.matchScore}</div>
       </div>
-      <div class="details">
-        <div class="grid2">
-          <div class="box"><div class="boxTitle">Strengths</div><ol class="list">${(r.strengths||[]).map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ol></div>
-          <div class="box"><div class="boxTitle">Weaknesses</div><ol class="list">${(r.weaknesses||[]).map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ol></div>
-        </div>
-      </div>
-    </div>
-  `).join("");
-  els.results.querySelectorAll(".row").forEach(row => {
-    row.addEventListener("click", () => row.closest(".card").classList.toggle("open"));
-  });
+    `).join("");
+
+    resultsEl.querySelectorAll(".row").forEach(row => {
+      row.addEventListener("click", () => row.closest(".card").classList.toggle("open"));
+    });
+  }
 }
 
 async function extractTextFromPdf(file) {
@@ -122,12 +135,15 @@ async function extractCvText(file) {
 }
 
 async function analyze() {
-  const jobDescription = els.jobDescription.value.trim();
-  const files = Array.from(els.cvFiles.files || []);
-  if (jobDescription.length < 30) { setStatus("Job description too short"); return; }
-  if (!files.length) { setStatus("Select at least one CV"); return; }
+  const jobDescription = $('#jobDescription')?.value.trim();
+  const cvFiles = $('#cvFiles');
+  const files = Array.from(cvFiles?.files || []);
 
-  els.analyzeBtn.disabled = true;
+  if (!jobDescription || jobDescription.length < 30) { setStatus("Job description too short", "error"); return; }
+  if (!files.length) { setStatus("Select at least one CV", "error"); return; }
+
+  const analyzeBtn = $('#analyzeBtn');
+  if (analyzeBtn) analyzeBtn.disabled = true;
   setStatus("Extracting CVs...");
 
   try {
@@ -136,7 +152,7 @@ async function analyze() {
       setStatus(`Extracting ${i+1}/${files.length}...`);
       cvs.push(await extractCvText(files[i]));
     }
-    setStatus("Analyzing...");
+    setStatus("Analyzing with AI...");
     const resp = await fetch("/api/analyze", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -145,31 +161,61 @@ async function analyze() {
     const data = await resp.json();
     if (!resp.ok) throw new Error(data?.error || "Request failed");
     renderResults(data.results || []);
-    setStatus("Done!");
+    setStatus(`Done — ${data.results?.length || 0} candidates ranked`, "success");
   } catch (e) {
-    setStatus(e.message || "Something went wrong");
+    setStatus(e.message || "Something went wrong", "error");
   } finally {
-    els.analyzeBtn.disabled = false;
+    if (analyzeBtn) analyzeBtn.disabled = false;
   }
 }
 
-els.cvFiles.addEventListener("change", () => {
-  const count = els.cvFiles.files?.length || 0;
-  els.fileCountChip.textContent = `${count} file${count === 1 ? "" : "s"} selected`;
+document.addEventListener('DOMContentLoaded', () => {
+  const cvFiles = $('#cvFiles');
+  const uploadArea = $('#uploadArea');
+  const analyzeBtn = $('#analyzeBtn');
+  const exportBtn = $('#exportBtn');
+
+  if (cvFiles) {
+    cvFiles.addEventListener("change", () => {
+      const count = cvFiles.files?.length || 0;
+      const chip = $('#fileCountChip');
+      if (chip) {
+        chip.textContent = `${count} file${count === 1 ? "" : "s"} selected`;
+        chip.classList.toggle('visible', count > 0);
+      }
+    });
+  }
+
+  // Drag & drop
+  if (uploadArea) {
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--accent)'; });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '';
+      if (cvFiles && e.dataTransfer.files.length) {
+        cvFiles.files = e.dataTransfer.files;
+        cvFiles.dispatchEvent(new Event('change'));
+      }
+    });
+    uploadArea.addEventListener('click', () => cvFiles?.click());
+  }
+
+  if (analyzeBtn) analyzeBtn.addEventListener("click", analyze);
+
+  if (exportBtn) {
+    exportBtn.addEventListener("click", () => {
+      if (!lastResults.length) return;
+      const header = "Rank,Filename,Score,Recommendation,Strength1,Strength2,Strength3,Weakness1,Weakness2,Weakness3";
+      const rows = lastResults.map((r,i) => [i+1, r.filename, r.matchScore, r.recommendation, ...(r.strengths||[]), ...(r.weaknesses||[])].join(","));
+      const blob = new Blob([[header,...rows].join("\n")], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "hireai-results.csv";
+      a.click();
+    });
+  }
+
+  renderResults([]);
+  setStatus("Ready");
 });
-
-els.analyzeBtn.addEventListener("click", analyze);
-
-els.exportBtn.addEventListener("click", () => {
-  if (!lastResults.length) return;
-  const header = "Rank,Filename,Score,Recommendation,Strength1,Strength2,Strength3,Weakness1,Weakness2,Weakness3";
-  const rows = lastResults.map((r,i) => [i+1, r.filename, r.matchScore, r.recommendation, ...(r.strengths||[]), ...(r.weaknesses||[])].join(","));
-  const blob = new Blob([[header,...rows].join("\n")], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "hireai-results.csv";
-  a.click();
-});
-
-renderResults([]);
-setStatus("Ready");
