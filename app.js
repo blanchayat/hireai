@@ -1,7 +1,7 @@
 ﻿/* ===== SUPABASE AUTH ===== */
 const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aW9qbmhhcWdybWZzbnlld2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2ODk5MzgsImV4cCI6MjA1NzI2NTkzOH0.yfyMFMBe3co-vXynryBVbaBY6YqEU';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: "implicit" } });
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function signInWithGoogle() {
   await _supabase.auth.signInWithOAuth({
@@ -15,7 +15,8 @@ async function signOut() {
   location.reload();
 }
 
-function updateUI(user) {
+_supabase.auth.onAuthStateChange((event, session) => {
+  const user = session?.user;
   const appWrapper = document.getElementById('appWrapper');
   const gateScreen = document.getElementById('gateScreen');
   const userInfo = document.getElementById('userInfo');
@@ -25,23 +26,11 @@ function updateUI(user) {
     gateScreen.hidden = true;
     appWrapper.hidden = false;
     userInfo.textContent = user.email;
-    const newBtn = logoutBtn.cloneNode(true);
-    logoutBtn.parentNode.replaceChild(newBtn, logoutBtn);
-    newBtn.addEventListener('click', signOut);
+    logoutBtn.addEventListener('click', signOut);
   } else {
     gateScreen.hidden = false;
     appWrapper.hidden = true;
   }
-}
-
-// Check existing session on page load
-_supabase.auth.getSession().then(({ data: { session } }) => {
-  updateUI(session?.user ?? null);
-});
-
-// Listen for auth changes (login/logout)
-_supabase.auth.onAuthStateChange((event, session) => {
-  updateUI(session?.user ?? null);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -197,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Drag & drop
   if (uploadArea) {
     uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--accent)'; });
     uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
