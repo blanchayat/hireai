@@ -1,15 +1,13 @@
-﻿const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
+﻿/* ===== SUPABASE AUTH ===== */
+const SUPABASE_URL = 'https://qyiojnhaqgrmfsnyewcn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aW9qbmhhcWdybWZzbnlld2NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2ODk5MzgsImV4cCI6MjA1NzI2NTkzOH0.yfyMFMBe3co-vXynryBVbaBY6YqEU';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
-});
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: "implicit" } });
 
 async function signInWithGoogle() {
-  const { error } = await _supabase.auth.signInWithOAuth({
+  await _supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'https://hireai-a.vercel.app/callback.html' }
+    options: { redirectTo: window.location.origin }
   });
-  if (error) console.error(error);
 }
 
 async function signOut() {
@@ -17,37 +15,33 @@ async function signOut() {
   location.reload();
 }
 
-// Check session on load
-async function checkSession() {
-  const { data: { session } } = await _supabase.auth.getSession();
-  console.log('Session on load:', session?.user?.email);
-  updateUI(session?.user);
-}
-
 function updateUI(user) {
   const appWrapper = document.getElementById('appWrapper');
   const gateScreen = document.getElementById('gateScreen');
   const userInfo = document.getElementById('userInfo');
+  const logoutBtn = document.getElementById('logoutBtn');
+
   if (user) {
     gateScreen.hidden = true;
     appWrapper.hidden = false;
-    if (userInfo) userInfo.textContent = user.email;
+    userInfo.textContent = user.email;
+    const newBtn = logoutBtn.cloneNode(true);
+    logoutBtn.parentNode.replaceChild(newBtn, logoutBtn);
+    newBtn.addEventListener('click', signOut);
   } else {
     gateScreen.hidden = false;
     appWrapper.hidden = true;
   }
 }
 
-_supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth event:', event, session?.user?.email);
-  updateUI(session?.user);
+// Check existing session on page load
+_supabase.auth.getSession().then(({ data: { session } }) => {
+  updateUI(session?.user ?? null);
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-  checkSession();
-  document.getElementById('loginBtn2')?.addEventListener('click', signInWithGoogle);
-  document.getElementById('loginBtn')?.addEventListener('click', signInWithGoogle);
-  document.getElementById('logoutBtn')?.addEventListener('click', signOut);
+// Listen for auth changes (login/logout)
+_supabase.auth.onAuthStateChange((event, session) => {
+  updateUI(session?.user ?? null);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -178,7 +172,7 @@ async function analyze() {
     const data = await resp.json();
     if (!resp.ok) throw new Error(data?.error || "Request failed");
     renderResults(data.results || []);
-    setStatus(`Done â€” ${data.results?.length || 0} candidates ranked`, "success");
+    setStatus(`Done — ${data.results?.length || 0} candidates ranked`, "success");
   } catch (e) {
     setStatus(e.message || "Something went wrong", "error");
   } finally {
@@ -235,8 +229,3 @@ document.addEventListener('DOMContentLoaded', () => {
   renderResults([]);
   setStatus("Ready");
 });
-
-
-
-
-
